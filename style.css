@@ -1,0 +1,37 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+nav {
+	position: fixed;
+
+	padding-left: 2.5vw;
+}
+
+progress {
+	width: 95vw;
+}
+
+
+#loseMessage {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30em;
+    color: red;
+    z-index: 1000;
+}
+
+#restartButton {
+    display: none;
+    position: absolute;
+    top: 5%;
+    left: 10%;
+    transform: translate(-50%, -50%);
+	color: white;
+    font-size: 10em;
+    z-index: 1000;
+}
