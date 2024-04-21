@@ -35,3 +35,8 @@ progress {
     font-size: 10em;
     z-index: 1000;
 }
+
+body{
+    margin: 0;
+    background: #0c4a6e;
+}

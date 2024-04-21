@@ -1,4 +1,5 @@
-
+import * as THREE from 'three';
+import { OrbitControls } from 'OrbitControls';
 
 // Init scene
 const scene = new THREE.Scene()
@@ -16,6 +17,10 @@ renderer.setSize(window.innerWidth, window.innerHeight)
 var game = document.querySelector('.game')
 game.appendChild(renderer.domElement)
 
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+
+
 // Settings
 var levelLength = 100
 
@@ -26,12 +31,28 @@ const materialPlane = new THREE.MeshPhongMaterial({
 })
 var plane = new THREE.Mesh(geometryPlane, materialPlane)
 plane.scale.x = 1000    
-plane.scale.z = 3
+plane.scale.z = 1
 plane.position.y = -0.5
 plane.receiveShadow = true
 scene.add(plane)
 
 // Character
+class Character {
+	constructor({width,height,depth,color='#00ff00'}) {
+		this.characterBox = new THREE.BoxGeometry(1, 1, 1)
+		this.characterMaterial = new THREE.MeshPhongMaterial({
+			color: 0xffffff
+		})
+		
+		this.character = new THREE.Mesh(this.characterBox, this.characterMaterial)
+		this.character.position.y = 0.5
+		this.character.x_v = 0
+		this.character.y_v = 0
+		this.character.landed = true
+		this.character.gravity = 0.01
+		this.character.castShadow = true
+	}
+}
 const characterBox = new THREE.BoxGeometry(1, 1, 1)
 const characterMaterial = new THREE.MeshPhongMaterial({
 	color: 0xffffff
@@ -47,8 +68,55 @@ character.castShadow = true;
 
 scene.add(character)
 
+
+class Enemy{
+	constructor(x, y, z, speed, health, type = 'box') {
+        let geometry;
+        if (type === 'pyramid') {
+            geometry = new THREE.ConeGeometry(1, 1, 4);
+		}else{
+            geometry = new THREE.BoxGeometry(1, 1, 1);
+        }
+
+        this.mesh = new THREE.Mesh(
+            geometry,
+            new THREE.MeshPhongMaterial({ color: type === 'pyramid' ? 0xff0000 : 0xffffff })
+        );
+        this.mesh.position.set(x, y, z);
+        if (type === 'pyramid') {
+            this.mesh.rotation.y = Math.PI / 4;
+        }
+        this.speed = speed;
+        this.health = health;
+        scene.add(this.mesh);
+    }
+
+    update() {
+        this.mesh.position.x -= this.speed;
+    }
+
+
+	remove(){
+		scene.remove(this.mesh);
+	}
+  
+}
+
+
+var enemies = [];
+
+function spawnEnemy() {
+    var x = Math.random() * 100 + 50;
+    var y = 0.5;
+    var z = 0;
+    var speed = Math.random() * 0.1 + 0.1;
+    var health = 100;
+    var type = Math.random() < 0.5 ? 'pyramid' : 'box';
+    var enemy = new Enemy(x, y, z, speed, health, type);
+    enemies.push(enemy);
+}
 // Block
-const enemyGeometry = new THREE.BoxGeometry(1, 1, 1)
+/*const enemyGeometry = new THREE.BoxGeometry(1, 1, 1)
 const enemyMaterial = new THREE.MeshPhongMaterial({
 	color: 0xffffff
 })
@@ -67,11 +135,11 @@ const enemyMaterial2 = new THREE.MeshPhongMaterial({
 })
 var enemy2 = new THREE.Mesh(enemyGeometry2, enemyMaterial2)
 
-enemy2.scale.y = 1  
+enemy2.scale.y = 2
 enemy2.position.x = 2
-enemy2.position.y = 1
+enemy2.position.y = 0
 
-scene.add(enemy2)
+scene.add(enemy2)*/
 
 // Light
 const pointLight = new THREE.PointLight(0x0000ff, 1, 50)
@@ -88,8 +156,11 @@ scene.add(pointLight1)
 const light = new THREE.DirectionalLight(0xffffff, 0.3);
 light.position.set(0, 1, 0);
 scene.add(light); 
-         
 
+
+//light
+const light1 = new THREE.AmbientLight( 0x0404040 ); 
+scene.add( light1 );
 // Camera
 camera.rotation.y = 105
 camera.rotation.y = 135
@@ -126,16 +197,8 @@ window.addEventListener('resize', onWindowResize, false)
 // Key Controller
 function keyDown(data) {
 
-    switch (data.code) {
-        case 'KeyA':
-            character.position.z -= 0.5
-            break
-        case 'KeyD':
-            character.position.z += 0.5
-            break
-    }
     if (
-        (data.code == 'Space' || data.code == 'Click') &&
+        (data.code == 'Space' ) &&
         character.landed == true
     ) {
         character.landed = false
@@ -149,9 +212,13 @@ function gameController() {
 	// Camera
 	camera.lookAt(character.position)
 
+
 	camera.position.x = character.position.x - 2
 	camera.position.y = character.position.y + 2
 	camera.position.z = character.position.z + 3
+
+
+    updateEnemies(); 
 
 	// Progress bar
 	progress = (character.position.x / levelLength) * progressBar.max
@@ -165,11 +232,13 @@ function gameController() {
 	
 		// Show lose message
 		document.getElementById('loseMessage').style.display = 'block';
-		document.getElementById('restartButton').style.display = 'block';d
+		document.getElementById('restartButton').style.display = 'block';
 	}
 
 	// characterMoveController
 	character.position.x += 0.01
+
+
 
 	character.landed = false
 
@@ -202,24 +271,34 @@ function gameController() {
 	character.position.y += character.y_v
 }
 
+// Controle de renderização e jogo
+function updateEnemies() {
+    enemies.forEach((enemy, index) => {
+        enemy.update();
+        if (enemy.mesh.position.x < -100) {
+            enemy.remove();
+            enemies.splice(index, 1);
+        }
+    });
+}
+
 // Render world
 function render() {
-	renderer.render(scene, camera)
-
-	requestAnimationFrame(render)
-}
-
-
-
-
-function animate() {
-	requestAnimationFrame(animate);
+	requestAnimationFrame(render);
+	controls.update();
+	gameController();
 	renderer.render(scene, camera);
+	
 }
+
+
+setInterval(spawnEnemy, 2000); 
+
+
 
 
 // Restart button
-document.getElementById('restartButton').addEventListener('click', function() {
+/*document.getElementById('restartButton').addEventListener('click', function() {
     // Hide lose message
 	document.getElementById('loseMessage').style.display = 'none';
     // This is just an example, you will need to replace this with your actual game reset logic
@@ -242,4 +321,4 @@ function resetGame() {
 
     // Reset landed state
     character.landed = false;
-}
+}*/
