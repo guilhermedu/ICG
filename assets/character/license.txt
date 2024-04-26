@@ -1,0 +1,11 @@
+Model Information:
+* title:	Geometry-dash-icon
+* source:	https://sketchfab.com/3d-models/geometry-dash-icon-4460378b36c24eee8457e33b07a10d9a
+* author:	khalfanel (https://sketchfab.com/KhalfanEL)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Geometry-dash-icon" (https://sketchfab.com/3d-models/geometry-dash-icon-4460378b36c24eee8457e33b07a10d9a) by khalfanel (https://sketchfab.com/KhalfanEL) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Cube 12
+* source:	https://sketchfab.com/3d-models/cube-12-22a7c3f7df89476bbb1b1fdc2c1a6478
+* author:	mastergames2435 (https://sketchfab.com/mastergames243534)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Cube 12" (https://sketchfab.com/3d-models/cube-12-22a7c3f7df89476bbb1b1fdc2c1a6478) by mastergames2435 (https://sketchfab.com/mastergames243534) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

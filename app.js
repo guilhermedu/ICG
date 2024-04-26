@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'OrbitControls';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // Init scene
 const scene = new THREE.Scene()
@@ -9,316 +10,254 @@ const camera = new THREE.PerspectiveCamera(
 	0.1,
 	1000
 )
+camera.position.z = 5
 
 const renderer = new THREE.WebGLRenderer()
 renderer.shadowMap.enabled = true
 renderer.setSize(window.innerWidth, window.innerHeight)
-
-var game = document.querySelector('.game')
-game.appendChild(renderer.domElement)
+document.body.appendChild(renderer.domElement)
 
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 
-
-// Settings
-var levelLength = 100
-
-// Plane
-const geometryPlane = new THREE.BoxGeometry(1, 1, 1)
-const materialPlane = new THREE.MeshPhongMaterial({
-	color: 0xffffff
-})
-var plane = new THREE.Mesh(geometryPlane, materialPlane)
-plane.scale.x = 1000    
-plane.scale.z = 1
-plane.position.y = -0.5
-plane.receiveShadow = true
-scene.add(plane)
-
-// Character
-class Character {
-	constructor({width,height,depth,color='#00ff00'}) {
-		this.characterBox = new THREE.BoxGeometry(1, 1, 1)
-		this.characterMaterial = new THREE.MeshPhongMaterial({
-			color: 0xffffff
-		})
-		
-		this.character = new THREE.Mesh(this.characterBox, this.characterMaterial)
-		this.character.position.y = 0.5
-		this.character.x_v = 0
-		this.character.y_v = 0
-		this.character.landed = true
-		this.character.gravity = 0.01
-		this.character.castShadow = true
-	}
-}
-const characterBox = new THREE.BoxGeometry(1, 1, 1)
-const characterMaterial = new THREE.MeshPhongMaterial({
-	color: 0xffffff
-})
-var character = new THREE.Mesh(characterBox, characterMaterial)
-character.position.y = 0.5
-character.x_v = 0
-character.y_v = 0
-character.landed = true
-character.gravity = 0.01
-character.castShadow = true;
+// background
+const loader1 = new THREE.TextureLoader();
+loader1.load('assets/background/e7741d91aca93535797aab0fa8237099.jpg', function(texture) {
+    scene.background = texture;
+});
 
 
-scene.add(character)
+const modelcaracter='assets/character/scene.gltf'
+
+let character;
+//personagem principal
+const loader = new GLTFLoader();
+loader.load(modelcaracter, function (gltf) {
+    character = gltf.scene;
+    const box = new THREE.Box3().setFromObject(character);
+    const size = box.getSize(new THREE.Vector3()).length();
+    const scale = 2.0 / size;
+    character.scale.set(scale, scale, scale);
+	character.y_v = 0
+	character.landed = true
+	character.gravity = 0.01
+	character.rotation.y = -Math.PI / 2;
+	character.castShadow = true
+    scene.add(character);
+    character.position.set(0, 0, 0);
+}, undefined, function (error) {
+    console.error(error);
+});
+
+const modelenemy='assets/enemy/scene.gltf'
+
+let enemy;
+//inimigos
+const loader3 = new GLTFLoader();
+loader3.load(modelenemy, function (gltf) {
+	enemy = gltf.scene;
+	const box = new THREE.Box3().setFromObject(enemy);
+	const size = box.getSize(new THREE.Vector3()).length();
+	const scale = 2.0 / size;
+	enemy.scale.set(scale, scale, scale);
+	enemy.y_v = 0
+	enemy.landed = true
+	enemy.castShadow = true
+	scene.add(enemy);
+	enemy.position.set(5, 0, 0);
+}, undefined, function (error) {
+	console.error(error);
+});
+
+const loader2 = new THREE.TextureLoader();
+loader2.load('assets/background/63832f7533fcac464eeab537f6bac730.jpg', function(texture) {
+    const geometryPlane = new THREE.BoxGeometry(1, 1, 1);
+    const materialPlane = new THREE.MeshPhongMaterial({
+        map: texture 
+    });
+    var plane = new THREE.Mesh(geometryPlane, materialPlane);
+    plane.scale.x = 1000; 
+    plane.scale.z = 1;    
+    plane.position.y = -1.1; 
+    scene.add(plane);
+	plane.position.set(0, -1.1, 0);
+});
+
+// Lights
+// Ambient light
+const ambientLight = new THREE.AmbientLight(0xffffff, 3); // soft white light
+scene.add(ambientLight);
 
 
-class Enemy{
-	constructor(x, y, z, speed, health, type = 'box') {
-        let geometry;
-        if (type === 'pyramid') {
-            geometry = new THREE.ConeGeometry(1, 1, 4);
-		}else{
-            geometry = new THREE.BoxGeometry(1, 1, 1);
-        }
-
-        this.mesh = new THREE.Mesh(
-            geometry,
-            new THREE.MeshPhongMaterial({ color: type === 'pyramid' ? 0xff0000 : 0xffffff })
-        );
-        this.mesh.position.set(x, y, z);
-        if (type === 'pyramid') {
-            this.mesh.rotation.y = Math.PI / 4;
-        }
-        this.speed = speed;
-        this.health = health;
-        scene.add(this.mesh);
-    }
-
-    update() {
-        this.mesh.position.x -= this.speed;
-    }
-
-
-	remove(){
-		scene.remove(this.mesh);
-	}
-  
-}
-
-
-var enemies = [];
-
-function spawnEnemy() {
-    var x = Math.random() * 100 + 50;
-    var y = 0.5;
-    var z = 0;
-    var speed = Math.random() * 0.1 + 0.1;
-    var health = 100;
-    var type = Math.random() < 0.5 ? 'pyramid' : 'box';
-    var enemy = new Enemy(x, y, z, speed, health, type);
-    enemies.push(enemy);
-}
-// Block
-/*const enemyGeometry = new THREE.BoxGeometry(1, 1, 1)
-const enemyMaterial = new THREE.MeshPhongMaterial({
-	color: 0xffffff
-})
-var enemy = new THREE.Mesh(enemyGeometry, enemyMaterial)
-
-enemy.scale.y = 2
-enemy.position.x = 3
-enemy.position.y = 1
-
-scene.add(enemy)
-
-// enemy2
-const enemyGeometry2 = new THREE.BoxGeometry(1, 1, 1)
-const enemyMaterial2 = new THREE.MeshPhongMaterial({
-	color: 0xffffff
-})
-var enemy2 = new THREE.Mesh(enemyGeometry2, enemyMaterial2)
-
-enemy2.scale.y = 2
-enemy2.position.x = 2
-enemy2.position.y = 0
-
-scene.add(enemy2)*/
-
-// Light
-const pointLight = new THREE.PointLight(0x0000ff, 1, 50)
-pointLight.position.set(3, 3, 3)
-pointLight.castShadow = true
-scene.add(pointLight)
-
-// Light
-const pointLight1 = new THREE.PointLight(0xff0000, 1, 50)
-pointLight1.position.set(-3, 3, -3)      
-scene.add(pointLight1)
-
-//light
-const light = new THREE.DirectionalLight(0xffffff, 0.3);
-light.position.set(0, 1, 0);
-scene.add(light); 
-
-
-//light
-const light1 = new THREE.AmbientLight( 0x0404040 ); 
-scene.add( light1 );
-// Camera
-camera.rotation.y = 105
-camera.rotation.y = 135
-
-scene.add(camera)
-
-// Progress bar
-var progress = 0
-var progressBar = document.getElementById('progressBar')
-
-// Init
-render()
-setInterval(gameController, 16)
-
-// Music
-window.focus()
-window.addEventListener(
-	'focus',
-	new Audio('./music/Creeds - Push Up (Lyrics) _ Tiktok_mNrzmpA8JU4.mp3').play()
-)
-
-// Fix wrong size of a game when resized
-function onWindowResize() {
-	camera.aspect = window.innerWidth / window.innerHeight
-	camera.updateProjectionMatrix()
-
-	renderer.setSize(window.innerWidth, window.innerHeight)
-}
-
-window.addEventListener('resize', onWindowResize, false)
-
-
-
-// Key Controller
+//lógica de salto
 function keyDown(data) {
-
-    if (
-        (data.code == 'Space' ) &&
-        character.landed == true
-    ) {
-        character.landed = false
-        character.y_v += 0.21
+    if (data.code == 'Space' && character.landed) {
+        character.landed = false;
+        character.y_v = 0.3; 
     }
 }
-
 window.addEventListener('keydown', keyDown)
 
-function gameController() {
-	// Camera
-	camera.lookAt(character.position)
+//colisoes
+let animationFrameId;
+function checkCollisions() {
+    const characterBox = new THREE.Box3().setFromObject(character);
+
+    scene.children.forEach((object) => {
+        if (object === character || object === camera || object.type === 'PointLight')
+            return;
+
+        const objectBox = new THREE.Box3().setFromObject(object);
+        if (characterBox.intersectsBox(objectBox)) {
+            if (object === enemy) {
+                console.log("Game Over! Colisão com o inimigo.");
+                cancelAnimationFrame(animationFrameId);
+                displayGameOverScreen();  
+                return;  
+            }
+
+            character.position.y = objectBox.max.y + character.scale.y / 2;
+            character.y_v = 0;
+            character.landed = true;
+            character.rotation.z = 0;
+        }
+    })
+}
+//perdeu colidiu com o inimigo
+
+let score = 0; 
+let scoreInterval; 
+
+function startScore() {
+	if (scoreInterval) {
+        clearInterval(scoreInterval);
+    }
+
+    score = 0;
+    scoreElement.innerText = 'Score: ' + score;
+    scoreInterval = setInterval(() => {
+        score++;
+        scoreElement.innerText = 'Score: ' + score;
+    }, 500);
+}
+
+function stopScore() {
+    clearInterval(scoreInterval);
+}
+
+function displayGameOverScreen() {
+	stopScore();
+    const gameOverText = document.createElement('div');
+	gameOverText.id = 'game-over-screen';
+    gameOverText.style.position = 'fixed'; 
+	gameOverText.style.top = '0'; 
+    gameOverText.style.left = '0';
+    gameOverText.style.width = '100%';
+    gameOverText.style.height = '100vh'; 
+    gameOverText.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    gameOverText.style.color = 'white';
+    gameOverText.style.display = 'flex';
+    gameOverText.style.justifyContent = 'center';
+    gameOverText.style.alignItems = 'center';
+    gameOverText.style.fontSize = '300px';
+    gameOverText.style.zIndex = '1000'; 
+    gameOverText.innerText = 'Game Over!';
+    document.body.appendChild(gameOverText);
+	
+}
 
 
+
+//restart game
+const restartButton = document.createElement('button');
+restartButton.style.position = 'fixed';
+restartButton.style.padding = '50px 100px'; 
+restartButton.style.top = '10px';
+restartButton.style.right = '10px';
+restartButton.style.zIndex = '1001';
+restartButton.style.width = 'auto';
+restartButton.style.height = 'auto'; 
+restartButton.style.fontSize = '100px';
+restartButton.innerText = 'Restart';
+document.body.appendChild(restartButton);
+
+//pontuação
+const scoreElement = document.createElement('div');
+scoreElement.style.position = 'fixed';
+scoreElement.style.color = 'white';
+scoreElement.style.top = '10px';
+scoreElement.style.left = '10px';
+scoreElement.style.zIndex = '1001';
+scoreElement.style.fontSize = '200px';
+document.body.appendChild(scoreElement);
+
+
+
+function animate() {
+    animationFrameId=requestAnimationFrame(animate);
+	
+	character.position.x += 0.1;
+	
+
+
+	if (!character.landed) {
+        character.y_v -= character.gravity;
+    }
+
+    
+    character.position.y += character.y_v;
+
+    let planeHeight = -0.2; 
+    if (character.position.y <= planeHeight + (character.scale.y / 2)) {
+        character.position.y = planeHeight + (character.scale.y / 2); 
+        character.y_v = 0;         
+        character.landed = true;     
+        character.rotation.z = 0;    
+    }
+
+    if (!character.landed) {
+        character.rotation.z += 0.04;  
+    }
+
+	checkCollisions();
+
+
+	
+	controls.update();
+	
+	//comentar para utilizar o orbitcontrols
 	camera.position.x = character.position.x - 2
 	camera.position.y = character.position.y + 2
 	camera.position.z = character.position.z + 3
 
-
-    updateEnemies(); 
-
-	// Progress bar
-	progress = (character.position.x / levelLength) * progressBar.max
-	progressBar.value = progress
-
-	// caracter is off the plane
-	if (character.position.z < plane.position.z - plane.geometry.parameters.depth  ||
-		character.position.z > plane.position.z + plane.geometry.parameters.depth ) {
-		// Apply downward force
-		character.position.y -= 1;
+	camera.lookAt(character.position);
 	
-		// Show lose message
-		document.getElementById('loseMessage').style.display = 'block';
-		document.getElementById('restartButton').style.display = 'block';
-	}
-
-	// characterMoveController
-	character.position.x += 0.01
-
-
-
-	character.landed = false
-
-	scene.children.forEach((object) => {
-		if (object == character || object == camera || object.type == 'PointLight')
-			return
-
-		if (
-			object.position.x + object.scale.x / 2 <=
-				character.position.x - character.scale.x / 2 ||
-			object.position.x - object.scale.x / 2 >=
-				character.position.x + character.scale.x / 2 ||
-			object.position.y + object.scale.y / 2 <=
-				character.position.y - character.scale.y / 2 ||
-			object.position.y - object.scale.y / 2 >=
-				character.position.y + character.scale.y / 2
-		)
-			return
-
-		if (character.y_v <= 0) character.y_v = 0
-
-		character.landed = true
-	})
-
-	character.rotation.z = character.rotation.z - 0.04
-
-	if (!character.landed) character.y_v -= character.gravity
-	if (character.landed) character.rotation.z = 0
-
-	character.position.y += character.y_v
+    renderer.render(scene, camera);
 }
 
-// Controle de renderização e jogo
-function updateEnemies() {
-    enemies.forEach((enemy, index) => {
-        enemy.update();
-        if (enemy.mesh.position.x < -100) {
-            enemy.remove();
-            enemies.splice(index, 1);
-        }
-    });
+function restartGame() {
+    cancelAnimationFrame(animationFrameId);
+    const gameOverScreen = document.getElementById('game-over-screen');
+    if (gameOverScreen) {
+        document.body.removeChild(gameOverScreen);
+    }
+
+    character.position.set(0, 0, 0);
+    enemy.position.set(5, 0, 0);
+    character.landed = true;
+    character.y_v = 0;
+	character.rotation.y = -Math.PI / 2;
+	character.rotation.z = 0;
+
+    startScore(); 
+	animate();
 }
 
-// Render world
-function render() {
-	requestAnimationFrame(render);
-	controls.update();
-	gameController();
-	renderer.render(scene, camera);
-	
-}
-
-
-setInterval(spawnEnemy, 2000); 
-
-
-
-
-// Restart button
-/*document.getElementById('restartButton').addEventListener('click', function() {
-    // Hide lose message
-	document.getElementById('loseMessage').style.display = 'none';
-    // This is just an example, you will need to replace this with your actual game reset logic
-    resetGame();
+restartButton.addEventListener('click', function(event) {
+    if (event.pointerType === 'mouse') {
+        restartGame();
+    }
+    event.stopPropagation(); 
 });
 
-function resetGame() {
-    // Reset character's position
-    character.position.x = 0;
-    character.position.y = 0.5;
-    character.position.z = 0;
-
-    // Reset character's velocityddddd
-    character.y_v = 0;
-
-    // Reset character's rotation
-    character.rotation.x = 0;
-    character.rotation.y = 0;
-    character.rotation.z = 0;
-
-    // Reset landed state
-    character.landed = false;
-}*/
+animate();
