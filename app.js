@@ -51,23 +51,36 @@ loader.load(modelcaracter, function (gltf) {
 
 const modelenemy='assets/enemy/scene.gltf'
 
-let enemy;
-//inimigos
-const loader3 = new GLTFLoader();
-loader3.load(modelenemy, function (gltf) {
-	enemy = gltf.scene;
-	const box = new THREE.Box3().setFromObject(enemy);
-	const size = box.getSize(new THREE.Vector3()).length();
-	const scale = 2.0 / size;
-	enemy.scale.set(scale, scale, scale);
-	enemy.y_v = 0
-	enemy.landed = true
-	enemy.castShadow = true
-	scene.add(enemy);
-	enemy.position.set(5, 0, 0);
-}, undefined, function (error) {
-	console.error(error);
-});
+let enemies = [];
+const numEnemies = 30; 
+let previousEnemyPosition = 0; // Posição do inimigo anterior
+
+// Carregar inimigos
+for (let i = 0; i < numEnemies; i++) {
+    const loader = new GLTFLoader();
+    loader.load(modelenemy, function (gltf) {
+        let enemy = gltf.scene;
+        const box = new THREE.Box3().setFromObject(enemy);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const scale = 2.0 / size;
+        enemy.scale.set(scale, scale, scale);
+        enemy.y_v = 0
+        enemy.landed = true
+        enemy.castShadow = true
+        scene.add(enemy);
+
+        // Gerar uma posição aleatória para o inimigo
+        let enemyPosition = previousEnemyPosition + 5 + Math.random() * 10;
+        enemy.position.set(enemyPosition, 0, 0);
+
+        // Atualizar a posição do inimigo anterior
+        previousEnemyPosition = enemyPosition;
+
+        enemies.push(enemy);
+    }, undefined, function (error) {
+        console.error(error);
+    });
+}
 
 const loader2 = new THREE.TextureLoader();
 loader2.load('assets/background/63832f7533fcac464eeab537f6bac730.jpg', function(texture) {
@@ -79,6 +92,7 @@ loader2.load('assets/background/63832f7533fcac464eeab537f6bac730.jpg', function(
     plane.scale.x = 1000; 
     plane.scale.z = 1;    
     plane.position.y = -1.1; 
+    plane.receiveShadow = true;
     scene.add(plane);
 	plane.position.set(0, -1.1, 0);
 });
@@ -87,6 +101,11 @@ loader2.load('assets/background/63832f7533fcac464eeab537f6bac730.jpg', function(
 // Ambient light
 const ambientLight = new THREE.AmbientLight(0xffffff, 3); // soft white light
 scene.add(ambientLight);
+// Point light para iluminar o personagem
+const pointLight = new THREE.PointLight(0xffffff, 1);
+pointLight.position.set(3 , 0, 0 );
+pointLight.castShadow = true;
+scene.add(pointLight);
 
 
 //lógica de salto
@@ -109,7 +128,7 @@ function checkCollisions() {
 
         const objectBox = new THREE.Box3().setFromObject(object);
         if (characterBox.intersectsBox(objectBox)) {
-            if (object === enemy) {
+            if (enemies.includes(object)) { 
                 console.log("Game Over! Colisão com o inimigo.");
                 cancelAnimationFrame(animationFrameId);
                 displayGameOverScreen();  
@@ -128,8 +147,9 @@ function checkCollisions() {
 let score = 0; 
 let scoreInterval; 
 
+
 function startScore() {
-	if (scoreInterval) {
+    if (scoreInterval) {
         clearInterval(scoreInterval);
     }
 
@@ -138,32 +158,76 @@ function startScore() {
     scoreInterval = setInterval(() => {
         score++;
         scoreElement.innerText = 'Score: ' + score;
+        if (score >= 100) {
+            goToNextLevel();
+        }
     }, 500);
 }
+
+
+
 
 function stopScore() {
     clearInterval(scoreInterval);
 }
 
+//top scores
+function initializeTopScores() {
+    if (!localStorage.getItem('topScores')) {
+        localStorage.setItem('topScores', JSON.stringify([]));
+    }
+}
+
+
+function updateTopScores(newScore) {
+    let topScores = JSON.parse(localStorage.getItem('topScores'));
+    topScores.push(newScore);
+    topScores = topScores.sort((a, b) => b - a).slice(0, 5); 
+    localStorage.setItem('topScores', JSON.stringify(topScores));
+}
+
+function createScoresTable() {
+    const table = document.createElement('table');
+    table.style = "width: 20%; margin-top: 20px; margin-left: auto; margin-right: auto; font-size: 150px; color: white; border-collapse: collapse; border: 3px solid white;";
+
+    const header = table.createTHead();
+    const headerRow = header.insertRow();
+    const headerCell = headerRow.insertCell();
+    headerCell.innerText = 'Top Scores';
+    headerCell.style = "text-align: center; border-bottom: 2px solid white; padding: 10px; border-left: 2px solid white; border-right: 2px solid white;";
+
+    const body = table.createTBody();
+    let topScores = JSON.parse(localStorage.getItem('topScores'));
+
+    for (let score of topScores) {
+        let row = body.insertRow();
+        let cell = row.insertCell();
+        cell.innerText = score;
+        cell.style = "text-align: center; border-bottom: 1px solid white; padding: 10px; border-left: 2px solid white; border-right: 2px solid white;";
+    }
+
+    return table;
+}
+
+
+
 function displayGameOverScreen() {
-	stopScore();
+    stopScore();
+    updateTopScores(score); 
+
+    const gameOverContainer = document.createElement('div');
+    gameOverContainer.id = 'game-over-screen';
+    gameOverContainer.style = "position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: rgba(0,0,0,0.5); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 300px; z-index: 1000;";
+
     const gameOverText = document.createElement('div');
-	gameOverText.id = 'game-over-screen';
-    gameOverText.style.position = 'fixed'; 
-	gameOverText.style.top = '0'; 
-    gameOverText.style.left = '0';
-    gameOverText.style.width = '100%';
-    gameOverText.style.height = '100vh'; 
-    gameOverText.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    gameOverText.style.color = 'white';
-    gameOverText.style.display = 'flex';
-    gameOverText.style.justifyContent = 'center';
-    gameOverText.style.alignItems = 'center';
-    gameOverText.style.fontSize = '300px';
-    gameOverText.style.zIndex = '1000'; 
     gameOverText.innerText = 'Game Over!';
-    document.body.appendChild(gameOverText);
-	
+    gameOverText.style = "margin-bottom: 20px;";  
+
+    const scoresTable = createScoresTable(); 
+
+    gameOverContainer.appendChild(gameOverText);
+    gameOverContainer.appendChild(scoresTable); 
+    document.body.appendChild(gameOverContainer);
 }
 
 
@@ -191,10 +255,56 @@ scoreElement.style.zIndex = '1001';
 scoreElement.style.fontSize = '200px';
 document.body.appendChild(scoreElement);
 
+function clearEnemies() {
+    enemies.forEach(enemy => {
+        scene.remove(enemy);
+    });
+    enemies = []; 
+}
+
+function loadEnemies() {
+    let numEnemies = 30; 
+    let previousEnemyPosition = 0;
+
+    for (let i = 0; i < numEnemies; i++) {
+        const loader = new GLTFLoader();
+        loader.load('assets/enemy/scene.gltf', function (gltf) {
+            let enemy = gltf.scene;
+            scene.add(enemy);
+            let enemyPosition = previousEnemyPosition + 5 + Math.random() * 10;
+            enemy.position.set(enemyPosition, 0, 0);
+            previousEnemyPosition = enemyPosition;
+
+            const box = new THREE.Box3().setFromObject(enemy);
+            const size = box.getSize(new THREE.Vector3()).length();
+            const scale = 2.0 / size;
+            enemy.scale.set(scale, scale, scale);
+            enemy.castShadow = true;
+
+            enemies.push(enemy);
+        }, undefined, function (error) {
+            console.error(error);
+        });
+    }
+}
+
+//próximo nível
+function goToNextLevel() {
+    console.log("Parabéns! Você alcançou o próximo nível.");
+    clearEnemies();
+    character.position.set(0, 0, 0); // Reseta a posição do personagem
+    // Incrementar dificuldade ou mudar parâmetros do jogo aqui
+}
+
 
 
 function animate() {
+    initializeTopScores();
+    
     animationFrameId=requestAnimationFrame(animate);
+
+    //atualizar a posição da luz para seguir o personagem   
+    pointLight.position.set(character.position.x, character.position.y + 2, character.position.z);
 	
 	character.position.x += 0.1;
 	
@@ -234,6 +344,7 @@ function animate() {
 	
     renderer.render(scene, camera);
 }
+startScore(); 
 
 function restartGame() {
     cancelAnimationFrame(animationFrameId);
@@ -243,11 +354,13 @@ function restartGame() {
     }
 
     character.position.set(0, 0, 0);
-    enemy.position.set(5, 0, 0);
     character.landed = true;
     character.y_v = 0;
 	character.rotation.y = -Math.PI / 2;
 	character.rotation.z = 0;
+
+    clearEnemies();
+    loadEnemies();
 
     startScore(); 
 	animate();
