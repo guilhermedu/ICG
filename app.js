@@ -53,7 +53,7 @@ const modelenemy='assets/enemy/scene.gltf'
 
 let enemies = [];
 const numEnemies = 30; 
-let previousEnemyPosition = 0; // Posição do inimigo anterior
+let previousEnemyPosition = 0;
 
 // Carregar inimigos
 for (let i = 0; i < numEnemies; i++) {
@@ -69,11 +69,11 @@ for (let i = 0; i < numEnemies; i++) {
         enemy.castShadow = true
         scene.add(enemy);
 
-        // Gerar uma posição aleatória para o inimigo
+        
         let enemyPosition = previousEnemyPosition + 5 + Math.random() * 10;
         enemy.position.set(enemyPosition, 0, 0);
 
-        // Atualizar a posição do inimigo anterior
+        
         previousEnemyPosition = enemyPosition;
 
         enemies.push(enemy);
@@ -107,6 +107,14 @@ pointLight.position.set(3 , 0, 0 );
 pointLight.castShadow = true;
 scene.add(pointLight);
 
+//próximo nível
+function goToNextLevel() {
+    console.log("Parabéns! Você alcançou o próximo nível.");
+    clearEnemies();
+    loadEnemies(); 
+    character.position.set(0, 0, 0); // Reseta a posição do personagem
+    // Incrementar dificuldade ou mudar parâmetros do jogo aqui
+}
 
 //lógica de salto
 function keyDown(data) {
@@ -158,7 +166,7 @@ function startScore() {
     scoreInterval = setInterval(() => {
         score++;
         scoreElement.innerText = 'Score: ' + score;
-        if (score >= 100) {
+        if (score == 100) {
             goToNextLevel();
         }
     }, 500);
@@ -288,13 +296,7 @@ function loadEnemies() {
     }
 }
 
-//próximo nível
-function goToNextLevel() {
-    console.log("Parabéns! Você alcançou o próximo nível.");
-    clearEnemies();
-    character.position.set(0, 0, 0); // Reseta a posição do personagem
-    // Incrementar dificuldade ou mudar parâmetros do jogo aqui
-}
+ 
 
 
 
