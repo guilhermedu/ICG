@@ -111,9 +111,15 @@ scene.add(pointLight);
 function goToNextLevel() {
     console.log("Parabéns! Você alcançou o próximo nível.");
     clearEnemies();
-    loadEnemies(); 
-    character.position.set(0, 0, 0); // Reseta a posição do personagem
-    // Incrementar dificuldade ou mudar parâmetros do jogo aqui
+    loadEnemies1(); 
+    character.position.set(0, 0, 0); 
+    speed = 0.14;
+
+    // Load the new background texture
+    const loader = new THREE.TextureLoader();
+    loader.load('assets/background2/roxo.jpg', function(texture) {
+        scene.background = texture;
+    });
 }
 
 //lógica de salto
@@ -296,21 +302,49 @@ function loadEnemies() {
     }
 }
 
+function loadEnemies1() {
+    let numEnemies = 40; 
+    let previousEnemyPosition = 0;
+    
+  
+
+    for (let i = 0; i < numEnemies; i++) {
+        const loader = new GLTFLoader();
+        loader.load('assets/enemy1/scene.gltf', function (gltf) {
+            let enemy = gltf.scene;
+            scene.add(enemy);
+            let enemyPosition = previousEnemyPosition + 7 + Math.random() * 10;
+            enemy.position.set(enemyPosition, -1, 0.5);
+            previousEnemyPosition = enemyPosition;
+
+            const box = new THREE.Box3().setFromObject(enemy);
+            const size = box.getSize(new THREE.Vector3()).length();
+            const scale = 2.0 / size;
+            enemy.scale.set(scale, scale, scale);
+            enemy.castShadow = true;
+
+            enemies.push(enemy);
+        }, undefined, function (error) {
+            console.error(error);
+        });
+    }
+}
+
  
 
-
+let speed = 0.1;
 
 function animate() {
     initializeTopScores();
     
     animationFrameId=requestAnimationFrame(animate);
 
-    //atualizar a posição da luz para seguir o personagem   
-    pointLight.position.set(character.position.x, character.position.y + 2, character.position.z);
+       
+    //pointLight.position.set(character.position.x, character.position.y + 2, character.position.z);
 	
-	character.position.x += 0.1;
+	character.position.x += speed;
 	
-
+    
 
 	if (!character.landed) {
         character.y_v -= character.gravity;
@@ -354,6 +388,12 @@ function restartGame() {
     if (gameOverScreen) {
         document.body.removeChild(gameOverScreen);
     }
+
+    // Reset background to the initial texture
+    const loader = new THREE.TextureLoader();
+    loader.load('assets/background/e7741d91aca93535797aab0fa8237099.jpg', function(texture) {
+        scene.background = texture;
+    }); 
 
     character.position.set(0, 0, 0);
     character.landed = true;
