@@ -221,7 +221,7 @@ function updateTopScores(newScore) {
 
 function createScoresTable() {
     const table = document.createElement('table');
-    table.style = "width: 20%; margin-top: 20px; margin-left: auto; margin-right: auto; font-size: 150px; color: white; border-collapse: collapse; border: 3px solid white;";
+    table.style = "width:10%; margin-top: 5px; margin-left: auto; margin-right: auto; font-size: 150px; color: white; border-collapse: collapse; border: 3px solid white;";
 
     const header = table.createTHead();
     const headerRow = header.insertRow();
@@ -250,11 +250,11 @@ function displayGameOverScreen() {
 
     const gameOverContainer = document.createElement('div');
     gameOverContainer.id = 'game-over-screen';
-    gameOverContainer.style = "position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: rgba(0,0,0,0.5); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 300px; z-index: 1000;";
+    gameOverContainer.style = "position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: rgba(0,0,0,0.5); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 100px; z-index: 1000;";
 
     const gameOverText = document.createElement('div');
     gameOverText.innerText = 'Game Over!';
-    gameOverText.style = "margin-bottom: 20px;";  
+    gameOverText.style = "margin-bottom: 10px;";  
 
     const scoresTable = createScoresTable(); 
 
@@ -268,7 +268,7 @@ function displayGameOverScreen() {
 //restart game
 const restartButton = document.createElement('button');
 restartButton.style.position = 'fixed';
-restartButton.style.padding = '50px 100px'; 
+restartButton.style.padding = '10px 20px'; 
 restartButton.style.top = '10px';
 restartButton.style.right = '10px';
 restartButton.style.zIndex = '1001';
@@ -285,7 +285,7 @@ scoreElement.style.color = 'white';
 scoreElement.style.top = '10px';
 scoreElement.style.left = '10px';
 scoreElement.style.zIndex = '1001';
-scoreElement.style.fontSize = '200px';
+scoreElement.style.fontSize = '100px';
 document.body.appendChild(scoreElement);
 
 function clearEnemies() {
@@ -396,7 +396,6 @@ function loadMixedEnemies() {
 
 }
 
-isLoadMixedEnemiesActive = false; 
 
 function animate() {
     initializeTopScores();
@@ -415,6 +414,7 @@ function animate() {
             enemy.position.x -= 0.04 ;
         });
     }
+    isLoadMixedEnemiesActive = false; 
     
    
 
