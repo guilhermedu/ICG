@@ -50,6 +50,7 @@ loader.load(modelcaracter, function (gltf) {
 });
 
 const modelenemy='assets/enemy/scene.gltf'
+const modelEnemy1 = 'assets/enemy1/scene.gltf';
 
 let enemies = [];
 const numEnemies = 30; 
@@ -122,6 +123,21 @@ function goToNextLevel() {
     });
 }
 
+//próximo nível 2
+function goToNextLevel1() {
+    console.log("Parabéns! Você alcançou o próximo nível.");
+    clearEnemies();
+    loadMixedEnemies(); 
+    character.position.set(0, 0, 0); 
+    speed = 0.14;
+
+    // Load the new background texture
+    const loader = new THREE.TextureLoader();
+    loader.load('assets/background3/vermelho1.png', function(texture) {
+        scene.background = texture;
+    });
+}
+
 //lógica de salto
 function keyDown(data) {
     if (data.code == 'Space' && character.landed) {
@@ -174,6 +190,9 @@ function startScore() {
         scoreElement.innerText = 'Score: ' + score;
         if (score == 100) {
             goToNextLevel();
+        }
+        if(score == 215){
+            goToNextLevel1();
         }
     }, 500);
 }
@@ -330,9 +349,54 @@ function loadEnemies1() {
     }
 }
 
- 
-
 let speed = 0.1;
+let isLoadMixedEnemiesActive = false;
+
+
+function loadMixedEnemies() {
+    isLoadMixedEnemiesActive = true;
+    let numEnemies = 40;
+    let previousEnemyPosition = 0;
+    
+
+    let loadPromises = []; 
+
+    for (let i = 0; i < numEnemies; i++) {
+        let model = Math.random() < 0.5 ? modelenemy : modelEnemy1; 
+
+        let loadPromise = new Promise((resolve, reject) => {
+            loader.load(model, function (gltf) {
+                let enemy = gltf.scene;
+                scene.add(enemy);
+                let enemyPosition = previousEnemyPosition + 5 + Math.random() * 10;
+                if (model === modelenemy) {
+                    enemy.position.set(enemyPosition, 0, 0);
+                } else if (model === modelEnemy1) {
+                    enemy.position.set(enemyPosition, -1, 0.5);
+                }
+                previousEnemyPosition = enemyPosition;
+
+                const box = new THREE.Box3().setFromObject(enemy);
+                const size = box.getSize(new THREE.Vector3()).length();
+                const scale = 2.0 / size;
+                enemy.scale.set(scale, scale, scale);
+                enemy.castShadow = true;
+
+                enemies.push(enemy);
+                resolve(); 
+            }, undefined, function (error) {
+                console.error(error);
+                reject(error); 
+            });
+        });
+
+        loadPromises.push(loadPromise);
+    }
+
+
+}
+
+isLoadMixedEnemiesActive = false; 
 
 function animate() {
     initializeTopScores();
@@ -343,8 +407,16 @@ function animate() {
     //pointLight.position.set(character.position.x, character.position.y + 2, character.position.z);
 	
 	character.position.x += speed;
-	
+
+
     
+    if (isLoadMixedEnemiesActive) {
+        enemies.forEach(enemy => {
+            enemy.position.x -= 0.04 ;
+        });
+    }
+    
+   
 
 	if (!character.landed) {
         character.y_v -= character.gravity;
@@ -380,6 +452,9 @@ function animate() {
 	
     renderer.render(scene, camera);
 }
+
+
+
 startScore(); 
 
 function restartGame() {
@@ -395,14 +470,15 @@ function restartGame() {
         scene.background = texture;
     }); 
 
+    speed = 0.1;
     character.position.set(0, 0, 0);
     character.landed = true;
     character.y_v = 0;
 	character.rotation.y = -Math.PI / 2;
 	character.rotation.z = 0;
-
+ 
     clearEnemies();
-    loadEnemies();
+    loadEnemies(); 
 
     startScore(); 
 	animate();
