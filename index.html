@@ -5,10 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometry Dash 3D</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         body {
-          margin: 0;
-          background: url('assets/background/e7741d91aca93535797aab0fa8237099.jpg') no-repeat center center fixed; 
+            margin: 0;
+            background: url('assets/background/e7741d91aca93535797aab0fa8237099.jpg') no-repeat center center fixed; 
             -webkit-background-size: cover;
             -moz-background-size: cover;
             -o-background-size: cover;
@@ -17,16 +18,22 @@
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+            }
         }
-      }
     </script>
 </head>
 <body>
-    <table id="scoreTable"></table>
+    <div id="game-container"></div>
+    <button id="restart-button" class="restart-button">Restart</button>
+    <div id="score-element">Score: 0</div>
+    
+    <script type="module" src="app.js"></script>
+    
+
     <script type="module" src="app.js"></script>
 </body>
 </html>
