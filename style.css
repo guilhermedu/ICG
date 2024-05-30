@@ -9,7 +9,7 @@ body {
     top: 2%;
     left: 2%;
     color: white;
-    font-size: 5vw; /* Usando viewport width (largura da tela) como unidade de medida */
+    font-size: 5vw; 
     z-index: 10;
 }
 
@@ -18,18 +18,26 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(4, 3, 3, 0.8);
+    background: rgba(4, 3, 3, 0.5);
     color: white;
     padding: 2%;
     text-align: center;
-    border-radius: 1vw; /* Usando viewport width como unidade de medida */
+    border-radius: 1vw; 
     z-index: 20;
+}
+
+.game-over-text {
+    font-size:5vw; 
+    color: red;
 }
 
 #game-over-screen th, #game-over-screen td {
     padding: 2%;
     text-align: center;
-    font-size: 3vw; /* Usando viewport width como unidade de medida */
+    font-size: 3vw; 
+}
+#game-over-screen th {
+    padding-right: 4vw;
 }
 
 .restart-button {
@@ -37,11 +45,11 @@ body {
     top: 2%;
     right: 2%;
     padding: 1% 2%;
-    font-size: 3vw; /* Usando viewport width como unidade de medida */
+    font-size: 3vw; 
     background-color: #f44336;
     color: white;
     border: none;
-    border-radius: 0.5vw; /* Usando viewport width como unidade de medida */
+    border-radius: 0.5vw; 
     cursor: pointer;
     z-index: 10;
 }
