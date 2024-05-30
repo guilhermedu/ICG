@@ -6,10 +6,10 @@ body {
 
 #score-element {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 2%;
+    left: 2%;
     color: white;
-    font-size: 100px; /* Adjust size for different screens using media queries */
+    font-size: 5vw; /* Usando viewport width (largura da tela) como unidade de medida */
     z-index: 10;
 }
 
@@ -20,57 +20,32 @@ body {
     transform: translate(-50%, -50%);
     background: rgba(4, 3, 3, 0.8);
     color: white;
-    padding: 20px;
+    padding: 2%;
     text-align: center;
-    border-radius: 10px;
+    border-radius: 1vw; /* Usando viewport width como unidade de medida */
     z-index: 20;
 }
 
 #game-over-screen th, #game-over-screen td {
-    padding: 10px;
+    padding: 2%;
     text-align: center;
-    font-size: 120px; /* Adjust size for different screens using media queries */
+    font-size: 3vw; /* Usando viewport width como unidade de medida */
 }
 
 .restart-button {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 10px 20px;
-    font-size: 100px; /* Adjust size for different screens using media queries */
+    top: 2%;
+    right: 2%;
+    padding: 1% 2%;
+    font-size: 3vw; /* Usando viewport width como unidade de medida */
     background-color: #f44336;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 0.5vw; /* Usando viewport width como unidade de medida */
     cursor: pointer;
     z-index: 10;
 }
 
 .restart-button:hover {
     background-color: #d32f2f;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 1200px) {
-    #score-element, .restart-button, #game-over-screen th, #game-over-screen td {
-        font-size: 80px;
-    }
-}
-
-@media (max-width: 992px) {
-    #score-element, .restart-button, #game-over-screen th, #game-over-screen td {
-        font-size: 60px;
-    }
-}
-
-@media (max-width: 768px) {
-    #score-element, .restart-button, #game-over-screen th, #game-over-screen td {
-        font-size: 40px;
-    }
-}
-
-@media (max-width: 576px) {
-    #score-element, .restart-button, #game-over-screen th, #game-over-screen td {
-        font-size: 30px;
-    }
 }
