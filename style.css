@@ -57,3 +57,17 @@ body {
 .restart-button:hover {
     background-color: #d32f2f;
 }
+
+#toggle-camera-button {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    z-index: 1;
+    padding: 4em 8em;
+    font-size: 2em;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 0.5em;
+    cursor: pointer;
+}

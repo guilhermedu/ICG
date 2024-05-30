@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+
+
 
 // Init scene
 const scene = new THREE.Scene()
@@ -16,9 +19,44 @@ renderer.shadowMap.enabled = true
 renderer.setSize(window.innerWidth, window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
 
+
+let controls = new OrbitControls(camera, renderer.domElement);
+
+let isFirstPersonView = false;
+
+let cameraStartPosition = new THREE.Vector3(); // Para armazenar a posição inicial da câmera
+
+document.getElementById('toggle-camera-button').addEventListener('click', function() {
+    isFirstPersonView = !isFirstPersonView;
+
+    if (isFirstPersonView) {
+        // Usando FirstPersonControls
+        const firstPersonControls = new FirstPersonControls(camera, renderer.domElement);
+        firstPersonControls.movementSpeed = 10;
+        firstPersonControls.lookSpeed = 0.1;
+        firstPersonControls.lookVertical = true;
+
+        // Configura a posição inicial da câmera para ser a mesma que a posição inicial da personagem
+        camera.position.copy(character.position);
+        cameraStartPosition.copy(camera.position); // Armazena a posição inicial da câmera
+        camera.lookAt(character.position);
+
+        // Remover os controles orbitais antigos, se houver
+        controls.dispose();
+    } else {
+        // Usando OrbitControls
+        controls = new OrbitControls(camera, renderer.domElement);
+        camera.position.copy(cameraStartPosition);
+        camera.lookAt(0, 0, 0); // Aponta para o centro da cena
+
+        // Remover os controles de primeira pessoa antigos, se houver
+        if (camera.userData.firstPersonControls) {
+            camera.userData.firstPersonControls.dispose();
+        }
+    }
+    this.blur();
+});
 // Background
 const loader1 = new THREE.TextureLoader();
 loader1.load('assets/background/e7741d91aca93535797aab0fa8237099.jpg', function(texture) {
@@ -28,6 +66,7 @@ loader1.load('assets/background/e7741d91aca93535797aab0fa8237099.jpg', function(
 const modelcaracter='assets/character/scene.gltf'
 
 let character;
+
 // Personagem principal
 const loader = new GLTFLoader();
 loader.load(modelcaracter, function (gltf) {
@@ -399,11 +438,17 @@ function animate() {
 
     controls.update();
 
-    camera.position.x = character.position.x - 4;
-    camera.position.y = character.position.y + 4;
-    camera.position.z = character.position.z + 5;
-
-    camera.lookAt(character.position);
+    if (isFirstPersonView) {
+        camera.position.copy(character.position).add(new THREE.Vector3(0, 2, 5)); 
+        camera.lookAt(character.position);
+    } 
+    if (!isFirstPersonView){
+        // Use os controles orbitais
+        camera.position.x = character.position.x - 4;
+        camera.position.y = character.position.y + 4;
+        camera.position.z = character.position.z + 5;
+        camera.lookAt(character.position);
+    }
 
     renderer.render(scene, camera);
 }
