@@ -162,7 +162,7 @@ function goToNextLevel1() {
     clearEnemies();
     loadMixedEnemies(); 
     character.position.set(0, 0, 0); 
-    speed = 0.14;
+    speed = 0.15;
 
     const loader = new THREE.TextureLoader();
     loader.load('assets/background3/vermelho1.png', function(texture) {
@@ -308,7 +308,7 @@ function clearEnemies() {
 }
 
 function loadEnemies() {
-    let numEnemies = 30; 
+    let numEnemies = 35; 
     let previousEnemyPosition = 0;
 
     for (let i = 0; i < numEnemies; i++) {
@@ -316,7 +316,7 @@ function loadEnemies() {
         loader.load('assets/enemy/scene.gltf', function (gltf) {
             let enemy = gltf.scene;
             scene.add(enemy);
-            let enemyPosition = previousEnemyPosition + 5 + Math.random() * 10;
+            let enemyPosition = previousEnemyPosition + 5 + Math.random() * 5;
             enemy.position.set(enemyPosition, 0, 0);
             previousEnemyPosition = enemyPosition;
 
